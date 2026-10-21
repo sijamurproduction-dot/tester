@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Mario Bros - World 1-1 Festive Hub & Soundboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Press Start 2P & Fredoka -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mario-red': '#E52521',
+                        'mario-blue': '#00227B',
+                        'mario-sky': '#5C94FC',
+                        'mario-yellow': '#FBD000',
+                        'mario-green': '#43B047',
+                        'mario-brown': '#A04000',
+                        'mario-brick': '#B84418',
+                    },
+                    fontFamily: {
+                        retro: ['"Press Start 2P"', 'cursive'],
+                        sans: ['Fredoka', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 1.2s infinite alternate',
+                        'spin-slow': 'spin 6s linear infinite',
+                        'rainbow': 'rainbowGlow 2s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        pulseGlow: {
+                            '0%': { filter: 'drop-shadow(0 0 5px rgba(251, 208, 0, 0.6))' },
+                            '100%': { filter: 'drop-shadow(0 0 20px rgba(251, 208, 0, 1))' },
+                        },
+                        rainbowGlow: {
+                            '0%': { filter: 'hue-rotate(0deg)' },
+                            '100%': { filter: 'hue-rotate(360deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .pixel-border {
+            box-shadow: 
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000,
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000;
+        }
+
+        .retro-shadow {
+            box-shadow: 6px 6px 0px #000000;
+        }
+
+        .retro-shadow-sm {
+            box-shadow: 3px 3px 0px #000000;
+        }
+
+        .retro-btn {
+            transition: all 0.08s ease;
+        }
+        .retro-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0px #000000 !important;
+        }
+
+        .star-mode-active {
+            animation: rainbowGlow 0.4s linear infinite !important;
+        }
+
+        /* Floating particles canvas container */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #00227B;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FBD000;
+            border: 3px solid #000;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body id="main-body" class="bg-mario-sky font-sans text-gray-900 overflow-x-hidden selection:bg-mario-yellow selection:text-black transition-colors duration-500">
+
+    <!-- CANVAS PARTICLES BACKGROUND -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- FLOATING AUDIO CONTROL PANEL -->
+    <div class="fixed bottom-4 right-4 z-50 bg-black/90 border-4 border-mario-yellow p-3 rounded-2xl retro-shadow flex flex-col gap-2 max-w-[220px]">
+        <div class="flex items-center justify-between font-retro text-[10px] text-mario-yellow border-b border-gray-700 pb-1">
+            <span>🔊 CHIPTUNE BGM</span>
+            <span id="bgm-status-text" class="text-mario-red">OFF</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="bgm-toggle-btn" class="retro-btn bg-mario-green hover:bg-green-500 text-white font-retro text-[10px] p-2 border-2 border-black rounded flex-1">
+                ▶ PLAY MUSIC
+            </button>
+            <button id="mute-btn" class="retro-btn bg-mario-red hover:bg-red-600 text-white font-retro text-[10px] p-2 border-2 border-black rounded">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="font-retro text-[8px] text-white">VOL:</span>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.3" class="w-full accent-mario-yellow cursor-pointer">
+        </div>
+        <button id="star-power-btn" class="retro-btn font-retro text-[9px] bg-mario-yellow hover:bg-yellow-300 text-black border-2 border-black p-2 rounded flex items-center justify-center gap-1 font-bold animate-pulse">
+            ⭐ STAR POWER!
+        </button>
+    </div>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="sticky top-0 z-40 bg-mario-red border-b-4 border-black px-4 py-3 shadow-xl">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-mario-yellow border-2 border-black rounded-full flex items-center justify-center font-retro text-sm text-amber-900 animate-bounce">
+                    $
+                </div>
+                <span class="font-retro text-xs sm:text-sm text-white tracking-widest group-hover:text-mario-yellow transition drop-shadow-[0_2px_0_#000]">MARIO FESTIVE HUB</span>
+            </a>
+
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white font-retro text-sm focus:outline-none p-2 bg-mario-blue border-2 border-black rounded">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Nav Links -->
+            <div id="nav-links" class="hidden md:flex items-center space-x-3 w-full md:w-auto mt-3 md:mt-0">
+                <a href="#mini-game" class="font-retro text-[10px] text-white hover:text-mario-yellow bg-mario-blue border-2 border-black px-3 py-2 rounded retro-shadow-sm block text-center">Mini Game</a>
+                <a href="#soundboard" class="font-retro text-[10px] text-white hover:text-mario-yellow bg-mario-blue border-2 border-black px-3 py-2 rounded retro-shadow-sm block text-center">Soundboard</a>
+                <a href="#characters" class="font-retro text-[10px] text-white hover:text-mario-yellow bg-mario-blue border-2 border-black px-3 py-2 rounded retro-shadow-sm block text-center">Karakter</a>
+                <a href="#powerups" class="font-retro text-[10px] text-white hover:text-mario-yellow bg-mario-blue border-2 border-black px-3 py-2 rounded retro-shadow-sm block text-center">Power-Ups</a>
+                <a href="#trivia" class="font-retro text-[10px] text-white hover:text-mario-yellow bg-mario-blue border-2 border-black px-3 py-2 rounded retro-shadow-sm block text-center">Quiz</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- HERO SECTION -->
+    <section class="relative bg-mario-sky pt-12 pb-24 border-b-8 border-black overflow-hidden">
+        <!-- Floating Clouds -->
+        <div class="absolute top-8 left-10 opacity-90 animate-float pointer-events-none">
+            <div class="flex items-center">
+                <div class="w-16 h-12 bg-white border-2 border-black rounded-full"></div>
+                <div class="w-20 h-16 bg-white border-2 border-black rounded-full -ml-8 -mt-4"></div>
+                <div class="w-16 h-12 bg-white border-2 border-black rounded-full -ml-8"></div>
+            </div>
+        </div>
+        <div class="absolute top-16 right-16 opacity-90 animate-float pointer-events-none" style="animation-delay: 1.5s;">
+            <div class="flex items-center">
+                <div class="w-20 h-14 bg-white border-2 border-black rounded-full"></div>
+                <div class="w-24 h-18 bg-white border-2 border-black rounded-full -ml-10 -mt-6"></div>
+                <div class="w-20 h-14 bg-white border-2 border-black rounded-full -ml-10"></div>
+            </div>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 relative z-10 text-center">
+            <!-- Title -->
+            <div class="inline-block bg-mario-red border-4 border-black p-5 md:p-8 rounded-3xl retro-shadow mb-6 transform -rotate-1 animate-pulse-glow">
+                <h1 class="font-retro text-2xl sm:text-4xl md:text-5xl text-white drop-shadow-[0_4px_0_#000] leading-tight">
+                    SUPER MARIO<span class="text-mario-yellow">BROS.</span>
+                </h1>
+                <p class="font-retro text-[10px] sm:text-xs text-mario-yellow mt-2">FESTIVE CHIPTUNE & INTERACTIVE HUB</p>
+            </div>
+
+            <p class="text-lg md:text-2xl font-bold text-white drop-shadow-[0_3px_0_#000] max-w-3xl mx-auto mb-8 leading-snug">
+                Klik Blok Misteri, Tekan Pipa Warp, Mainkan Soundboard Synth 8-Bit & Rasakan Mode Star Power yang Super Meriah!
+            </p>
+
+            <!-- Interactive Block Section -->
+            <div class="flex justify-center items-center gap-4 sm:gap-8 my-8">
+                <!-- Interactive Question Block 1 -->
+                <button class="question-block retro-btn w-16 h-16 sm:w-20 sm:h-20 bg-mario-yellow border-4 border-black rounded-xl flex items-center justify-center font-retro text-2xl sm:text-3xl text-black font-bold retro-shadow animate-bounce">
+                    ?
+                </button>
+                <!-- Interactive Question Block 2 -->
+                <button class="question-block retro-btn w-16 h-16 sm:w-20 sm:h-20 bg-mario-yellow border-4 border-black rounded-xl flex items-center justify-center font-retro text-2xl sm:text-3xl text-black font-bold retro-shadow animate-bounce" style="animation-delay: 0.2s;">
+                    ?
+                </button>
+                <!-- Interactive Warp Pipe -->
+                <div id="interactive-pipe" class="relative group cursor-pointer">
+                    <div id="pirana-plant" class="absolute -top-12 left-1/2 transform -translate-x-1/2 w-10 h-12 bg-mario-red border-2 border-black rounded-t-full flex justify-center items-center opacity-0 transition-all duration-300">
+                        <div class="w-6 h-4 bg-white rounded-full flex items-center justify-around">
+                            <div class="w-1.5 h-1.5 bg-black rounded-full"></div>
+                            <div class="w-1.5 h-1.5 bg-black rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="w-20 h-24 sm:w-24 sm:h-28 bg-mario-green border-4 border-black rounded-t-xl retro-shadow flex flex-col justify-between">
+                        <div class="w-[110%] -ml-[5%] h-8 bg-green-400 border-b-4 border-black border-t-2 rounded-t-md"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="font-retro text-[10px] text-white drop-shadow-[0_2px_0_#000] animate-pulse">
+                👇 KLIK BLOK & PIPA DI ATAS UNTUK KEJUTAN SFX 8-BIT! 👇
+            </p>
+        </div>
+    </section>
+
+
+    <!-- MINI GAME CANVAS SECTION -->
+    <section id="mini-game" class="py-12 bg-mario-yellow border-b-8 border-black">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-6">
+                <span class="font-retro text-xs bg-mario-red text-white px-3 py-1 border-2 border-black rounded">ARCADE ZONE</span>
+                <h2 class="font-retro text-2xl md:text-3xl text-black mt-2 drop-shadow-[0_2px_0_#fff]">MARIO DASH PLATFORMER</h2>
+                <p class="font-bold text-gray-800 mt-1">Lompat kumpulkan koin, ambil Bintang ⭐ untuk kekebalan, & capai skor tertinggi!</p>
+            </div>
+
+            <div class="bg-black p-3 md:p-4 rounded-2xl border-4 border-black retro-shadow relative max-w-2xl mx-auto">
+                <!-- Score Header -->
+                <div class="flex justify-between items-center font-retro text-[10px] sm:text-xs text-white mb-2 px-2">
+                    <div>MARIO<br><span id="score-display" class="text-mario-yellow">000000</span></div>
+                    <div>COINS<br><span id="coins-display" class="text-mario-yellow">🪙 x00</span></div>
+                    <div>HI-SCORE<br><span id="high-score-display" class="text-mario-green">000000</span></div>
+                </div>
+
+                <!-- Canvas Screen -->
+                <div class="relative overflow-hidden rounded border-2 border-gray-700 bg-mario-sky">
+                    <canvas id="gameCanvas" width="600" height="320" class="w-full h-auto block"></canvas>
+
+                    <!-- Overlay Start/Game Over Screen -->
+                    <div id="game-overlay" class="absolute inset-0 bg-black/85 flex flex-col justify-center items-center text-center p-4 z-10">
+                        <h3 id="overlay-title" class="font-retro text-xl sm:text-2xl text-mario-yellow mb-2">MARIO MINI DASH</h3>
+                        <p id="overlay-msg" class="font-sans text-white mb-6 text-sm">Tekan Space / Panah Atas / Tap Tombol untuk Melompat!</p>
+                        <button id="start-btn" class="retro-btn font-retro text-xs bg-mario-red hover:bg-red-600 text-white border-2 border-black px-6 py-3 rounded-lg retro-shadow">
+                            MULAI MAIN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- On-screen Game Controls -->
+                <div class="mt-4 flex justify-between items-center gap-2">
+                    <div class="text-[10px] font-retro text-gray-400 hidden sm:block">
+                        [SPACE / PANAH ATAS] LOMPAT
+                    </div>
+                    <button id="mobile-jump-btn" class="w-full sm:w-auto font-retro text-xs bg-mario-blue hover:bg-blue-800 text-white border-2 border-black py-3 px-8 rounded-lg retro-shadow text-center uppercase">
+                        🦘 LOMPAT (JUMP)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- SOUNDBOARD SECTION (SYNTH 8-BIT) -->
+    <section id="soundboard" class="py-16 bg-mario-blue text-white border-b-8 border-black">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <span class="font-retro text-xs bg-mario-yellow text-black px-3 py-1 border-2 border-black rounded">WEB AUDIO SYNTH</span>
+                <h2 class="font-retro text-2xl md:text-4xl text-white mt-3">MARIO 8-BIT SOUNDBOARD</h2>
+                <p class="text-blue-200 mt-2 font-medium">Semua efek suara dihasilkan secara instan via Web Audio API Tanpa File External!</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <button onclick="playSfx('jump')" class="retro-btn bg-mario-red hover:bg-red-600 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">🦘</span>
+                    <span class="font-retro text-[10px]">JUMP</span>
+                </button>
+                <button onclick="playSfx('coin')" class="retro-btn bg-mario-yellow text-black hover:bg-yellow-300 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">🪙</span>
+                    <span class="font-retro text-[10px]">COIN</span>
+                </button>
+                <button onclick="playSfx('powerup')" class="retro-btn bg-mario-green hover:bg-green-600 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">🍄</span>
+                    <span class="font-retro text-[10px]">POWER-UP</span>
+                </button>
+                <button onclick="playSfx('star')" class="retro-btn bg-orange-500 hover:bg-orange-600 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">⭐</span>
+                    <span class="font-retro text-[10px]">STAR POWER</span>
+                </button>
+                <button onclick="playSfx('pipe')" class="retro-btn bg-emerald-600 hover:bg-emerald-700 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">🧪</span>
+                    <span class="font-retro text-[10px]">WARP PIPE</span>
+                </button>
+                <button onclick="playSfx('fireball')" class="retro-btn bg-mario-brick hover:bg-red-700 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">🔥</span>
+                    <span class="font-retro text-[10px]">FIREBALL</span>
+                </button>
+                <button onclick="playSfx('stomp')" class="retro-btn bg-mario-brown hover:bg-amber-800 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">👟</span>
+                    <span class="font-retro text-[10px]">STOMP</span>
+                </button>
+                <button onclick="playSfx('gameover')" class="retro-btn bg-purple-700 hover:bg-purple-800 border-4 border-black p-4 rounded-xl retro-shadow flex flex-col items-center gap-2">
+                    <span class="text-2xl">💀</span>
+                    <span class="font-retro text-[10px]">GAME OVER</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- CHARACTER GRID SECTION -->
+    <section id="characters" class="py-16 bg-mario-sky border-b-8 border-black">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="font-retro text-xs bg-mario-red text-white px-3 py-1 border-2 border-black rounded">ROSTER</span>
+                <h2 class="font-retro text-2xl md:text-4xl text-black mt-3">KARAKTER KERAJAAN JAMUR</h2>
+                <p class="font-bold text-gray-800 mt-2">Hover / Klik kartu karakter untuk mendengar suara khasnya!</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Mario -->
+                <div class="char-card bg-mario-red border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('jump')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        🍄
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">MARIO</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Pahlawan Utama</p>
+                    <p class="text-sm leading-relaxed mb-4 text-red-100">
+                        Pahlawan utama Mushroom Kingdom yang selalu siap menyelamatkan Putri Peach dari Bowser.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: Super Jump & Fireball
+                    </div>
+                </div>
+
+                <!-- Luigi -->
+                <div class="char-card bg-mario-green border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('powerup')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        👻
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">LUIGI</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Saudara Kembar Mario</p>
+                    <p class="text-sm leading-relaxed mb-4 text-green-100">
+                        Memiliki lompatan lebih tinggi dan menggunakan Poltergust untuk menangkap hantu.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: High Scuttle Jump
+                    </div>
+                </div>
+
+                <!-- Princess Peach -->
+                <div class="char-card bg-pink-500 border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('star')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        👑
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">PEACH</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Ratu Mushroom Kingdom</p>
+                    <p class="text-sm leading-relaxed mb-4 text-pink-100">
+                        Penguasa lembut yang dapat melayang di udara saat melompat dengan gaunnya.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: Floating Hover
+                    </div>
+                </div>
+
+                <!-- Bowser -->
+                <div class="char-card bg-mario-brown border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('pipe')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        🐲
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">BOWSER</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Raja Koopa</p>
+                    <p class="text-sm leading-relaxed mb-4 text-orange-100">
+                        Musuh bebuyutan Mario yang menghembuskan api dan memimpin pasukan Koopa.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: Fire Breath & Shell Spin
+                    </div>
+                </div>
+
+                <!-- Yoshi -->
+                <div class="char-card bg-emerald-500 border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('coin')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        🦕
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">YOSHI</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Sahabat Dinosaurus</p>
+                    <p class="text-sm leading-relaxed mb-4 text-emerald-100">
+                        Dinosaurus berlidah panjang yang mampu menelan musuh dan bertelur.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: Egg Throw & Flutter Jump
+                    </div>
+                </div>
+
+                <!-- Toad -->
+                <div class="char-card bg-blue-600 border-4 border-black rounded-2xl p-6 retro-shadow text-white cursor-pointer transform hover:-translate-y-2 transition duration-200" onclick="playSfx('stomp')">
+                    <div class="w-20 h-20 bg-white border-4 border-black rounded-full mx-auto flex items-center justify-center text-4xl mb-4 retro-shadow-sm">
+                        🍄
+                    </div>
+                    <h3 class="font-retro text-lg text-center text-mario-yellow mb-1">TOAD</h3>
+                    <p class="font-retro text-[10px] text-center text-white/80 mb-3">Pelayan Setia</p>
+                    <p class="text-sm leading-relaxed mb-4 text-blue-100">
+                        Warga Mushroom Kingdom yang lincah dan selalu siap memberikan bantuan item.
+                    </p>
+                    <div class="bg-black/30 rounded-lg p-2.5 border border-black/40 text-xs font-retro text-mario-yellow">
+                        Jurus: Speed Dash
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- POWER-UPS SHOWCASE SECTION -->
+    <section id="powerups" class="py-16 bg-mario-brick text-white border-b-8 border-black">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <span class="font-retro text-xs bg-mario-yellow text-black px-3 py-1 border-2 border-black rounded">ITEMS</span>
+                <h2 class="font-retro text-2xl md:text-4xl text-white mt-3">MARIO POWER-UPS SHOWCASE</h2>
+                <p class="text-orange-200 mt-2 font-medium">Klik pada item untuk mengaktifkan SFX & efek spesial!</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+
+                <!-- Super Mushroom -->
+                <div class="bg-white/10 backdrop-blur border-4 border-black rounded-xl p-5 text-center retro-shadow cursor-pointer hover:bg-white/20 transition" onclick="playSfx('powerup')">
+                    <div class="text-5xl mb-3 animate-bounce">🍄</div>
+                    <h3 class="font-retro text-xs text-mario-yellow mb-2">SUPER MUSHROOM</h3>
+                    <p class="text-xs text-gray-200">Mengubah Mario menjadi Super Mario dengan ukuran tubuh ganda!</p>
+                </div>
+
+                <!-- Fire Flower -->
+                <div class="bg-white/10 backdrop-blur border-4 border-black rounded-xl p-5 text-center retro-shadow cursor-pointer hover:bg-white/20 transition" onclick="playSfx('fireball')">
+                    <div class="text-5xl mb-3 animate-bounce" style="animation-delay: 0.2s;">🌻</div>
+                    <h3 class="font-retro text-xs text-mario-yellow mb-2">FIRE FLOWER</h3>
+                    <p class="text-xs text-gray-200">Memberi kemampuan menembak bola api membara ke arah musuh!</p>
+                </div>
+
+                <!-- Super Star -->
+                <div class="bg-white/10 backdrop-blur border-4 border-black rounded-xl p-5 text-center retro-shadow cursor-pointer hover:bg-white/20 transition" onclick="triggerStarPowerUI()">
+                    <div class="text-5xl mb-3 animate-spin-slow">⭐</div>
+                    <h3 class="font-retro text-xs text-mario-yellow mb-2">SUPER STAR</h3>
+                    <p class="text-xs text-gray-200">Kekebalan total sementara dan kecepatan supersonik!</p>
+                </div>
+
+                <!-- Super Leaf -->
+                <div class="bg-white/10 backdrop-blur border-4 border-black rounded-xl p-5 text-center retro-shadow cursor-pointer hover:bg-white/20 transition" onclick="playSfx('jump')">
+                    <div class="text-5xl mb-3 animate-bounce" style="animation-delay: 0.4s;">🍃</div>
+                    <h3 class="font-retro text-xs text-mario-yellow mb-2">SUPER LEAF</h3>
+                    <p class="text-xs text-gray-200">Mengubah Mario menjadi Raccoon Mario yang dapat terbang di udara!</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- TRIVIA QUIZ SECTION -->
+    <section id="trivia" class="py-16 bg-mario-yellow border-b-8 border-black">
+        <div class="max-w-3xl mx-auto px-4">
+            <div class="text-center mb-8">
+                <span class="font-retro text-xs bg-mario-blue text-white px-3 py-1 border-2 border-black rounded">QUIZ & TRIVIA</span>
+                <h2 class="font-retro text-2xl md:text-3xl text-black mt-3">MARIO LORE TRIVIA</h2>
+                <p class="font-bold text-gray-800 mt-1">Uji seberapa dalam pengetahuanmu tentang dunia Mario!</p>
+            </div>
+
+            <div id="quiz-box" class="bg-white border-4 border-black rounded-2xl p-6 sm:p-8 retro-shadow">
+                <div class="flex justify-between items-center border-b-2 border-black pb-3 mb-4">
+                    <span id="quiz-progress" class="font-retro text-xs text-mario-blue">PERTANYAAN 1/3</span>
+                    <span id="quiz-score" class="font-retro text-xs text-mario-green">SCORE: 0</span>
+                </div>
+
+                <h3 id="quiz-question" class="font-retro text-sm sm:text-base text-black mb-6 leading-relaxed">
+                    Siapakah nama asli Mario saat pertama kali muncul di game arcade Donkey Kong (1981)?
+                </h3>
+
+                <div id="quiz-options" class="grid grid-cols-1 gap-3">
+                    <!-- Options populated via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FOOTER -->
+    <footer class="bg-black text-white py-10 px-4 text-center border-t-8 border-mario-red">
+        <div class="max-w-4xl mx-auto space-y-4">
+            <p class="font-retro text-xs text-mario-yellow animate-pulse">
+                THANK YOU MARIO! BUT OUR PRINCESS IS IN ANOTHER CASTLE!
+            </p>
+            <p class="text-xs text-gray-400 font-sans">
+                Dibuat khusus secara interaktif dengan Web Audio API Synth 8-Bit. Hak Cipta Karakter & Musik milik Nintendo.
+            </p>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ====================================================
+        // 1. WEB AUDIO API SYNTHESIZER (8-BIT BGM & SFX)
+        // ====================================================
+        let audioCtx = null;
+        let isMuted = false;
+        let masterGain = null;
+        let bgmGain = null;
+        let isBgmPlaying = false;
+        let bgmInterval = null;
+        let currentNoteIndex = 0;
+        let isStarPowerActive = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.3;
+                masterGain.connect(audioCtx.destination);
+
+                bgmGain = audioCtx.createGain();
+                bgmGain.gain.value = 0.2;
+                bgmGain.connect(masterGain);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Mario Main Theme Frequencies (Notes & Frequencies in Hz)
+        const NOTE_E5 = 659.25, NOTE_E4 = 329.63, NOTE_C5 = 523.25, NOTE_G5 = 783.99, NOTE_G4 = 392.00;
+        const NOTE_A4 = 440.00, NOTE_B4 = 493.88, NOTE_AS4 = 466.16, NOTE_A5 = 880.00, NOTE_F5 = 698.46;
+        const NOTE_D5 = 587.33, NOTE_D4 = 293.66;
+
+        const marioThemeNotes = [
+            { note: NOTE_E5, duration: 0.15 }, { note: NOTE_E5, duration: 0.15 }, { note: 0, duration: 0.15 },
+            { note: NOTE_E5, duration: 0.15 }, { note: 0, duration: 0.15 }, { note: NOTE_C5, duration: 0.15 },
+            { note: NOTE_E5, duration: 0.25 }, { note: NOTE_G5, duration: 0.35 }, { note: 0, duration: 0.2 },
+            { note: NOTE_G4, duration: 0.35 }, { note: 0, duration: 0.2 },
+            // Section 2
+            { note: NOTE_C5, duration: 0.25 }, { note: NOTE_G4, duration: 0.25 }, { note: NOTE_E4, duration: 0.25 },
+            { note: NOTE_A4, duration: 0.2 }, { note: NOTE_B4, duration: 0.2 }, { note: NOTE_AS4, duration: 0.15 },
+            { note: NOTE_A4, duration: 0.25 }, { note: NOTE_G4, duration: 0.2 }, { note: NOTE_E5, duration: 0.2 },
+            { note: NOTE_G5, duration: 0.2 }, { note: NOTE_A5, duration: 0.25 }, { note: NOTE_F5, duration: 0.15 },
+            { note: NOTE_G5, duration: 0.2 }, { note: NOTE_E5, duration: 0.25 }, { note: NOTE_C5, duration: 0.15 },
+            { note: NOTE_D5, duration: 0.15 }, { note: NOTE_B4, duration: 0.25 }
+        ];
+
+        function playBgmNote() {
+            if (!isBgmPlaying || !audioCtx) return;
+
+            const noteData = marioThemeNotes[currentNoteIndex];
+            const speedMultiplier = isStarPowerActive ? 0.6 : 1.0;
+
+            if (noteData && noteData.note > 0) {
+                const osc = audioCtx.createOscillator();
+                const noteGain = audioCtx.createGain();
+
+                osc.type = isStarPowerActive ? 'sawtooth' : 'square';
+                osc.frequency.setValueAtTime(noteData.note * (isStarPowerActive ? 1.25 : 1.0), audioCtx.currentTime);
+
+                noteGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + noteData.duration * speedMultiplier);
+
+                osc.connect(noteGain);
+                noteGain.connect(bgmGain);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + noteData.duration * speedMultiplier);
+            }
+
+            currentNoteIndex = (currentNoteIndex + 1) % marioThemeNotes.length;
+            bgmInterval = setTimeout(playBgmNote, (noteData ? noteData.duration : 0.2) * 1000 * speedMultiplier);
+        }
+
+        function toggleBgm() {
+            initAudio();
+            const btn = document.getElementById('bgm-toggle-btn');
+            const statusText = document.getElementById('bgm-status-text');
+
+            if (isBgmPlaying) {
+                isBgmPlaying = false;
+                clearTimeout(bgmInterval);
+                btn.textContent = '▶ PLAY MUSIC';
+                btn.className = 'retro-btn bg-mario-green hover:bg-green-500 text-white font-retro text-[10px] p-2 border-2 border-black rounded flex-1';
+                statusText.textContent = 'OFF';
+                statusText.className = 'text-mario-red';
+            } else {
+                isBgmPlaying = true;
+                currentNoteIndex = 0;
+                playBgmNote();
+                btn.textContent = '⏸ PAUSE MUSIC';
+                btn.className = 'retro-btn bg-mario-yellow text-black hover:bg-yellow-300 font-retro text-[10px] p-2 border-2 border-black rounded flex-1';
+                statusText.textContent = 'ON 🎶';
+                statusText.className = 'text-mario-green';
+            }
+        }
+
+        // Programmatic SFX Generators
+        function playSfx(type) {
+            initAudio();
+            if (isMuted) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            const now = audioCtx.currentTime;
+
+            switch (type) {
+                case 'jump':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                    break;
+
+                case 'coin':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now); // B5
+                    osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                    break;
+
+                case 'powerup':
+                    osc.type = 'triangle';
+                    const notes = [330, 392, 659, 523, 587, 784];
+                    notes.forEach((freq, idx) => {
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    });
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                    break;
+
+                case 'star':
+                    triggerStarPowerUI();
+                    break;
+
+                case 'pipe':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                    break;
+
+                case 'fireball':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                    break;
+
+                case 'stomp':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                    break;
+
+                case 'gameover':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.setValueAtTime(300, now + 0.15);
+                    osc.frequency.setValueAtTime(200, now + 0.3);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.6);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                    break;
+            }
+        }
+
+        // Star Power Rainbow Mode Toggle
+        function triggerStarPowerUI() {
+            isStarPowerActive = true;
+            document.body.classList.add('star-mode-active');
+            playSfx('powerup');
+
+            setTimeout(() => {
+                isStarPowerActive = false;
+                document.body.classList.remove('star-mode-active');
+            }, 6000);
+        }
+
+
+        // ====================================================
+        // 2. CANVAS FLOATING PARTICLES (COINS & STARS)
+        // ====================================================
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        let particles = [];
+
+        function resizeBgCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeBgCanvas);
+        resizeBgCanvas();
+
+        function createParticle() {
+            if (particles.length < 30) {
+                particles.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: bgCanvas.height + 20,
+                    size: Math.random() * 12 + 10,
+                    speedY: Math.random() * 1.5 + 0.8,
+                    type: Math.random() > 0.5 ? 'coin' : 'star',
+                    rotation: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function animateParticles() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.y -= p.speedY;
+                p.rotation += 0.05;
+
+                bgCtx.save();
+                bgCtx.translate(p.x, p.y);
+                bgCtx.rotate(p.rotation);
+
+                if (p.type === 'coin') {
+                    bgCtx.fillStyle = '#FBD000';
+                    bgCtx.beginPath();
+                    bgCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                    bgCtx.fill();
+                    bgCtx.strokeStyle = '#000';
+                    bgCtx.lineWidth = 2;
+                    bgCtx.stroke();
+                } else {
+                    bgCtx.fillStyle = '#FFFFFF';
+                    bgCtx.font = `${p.size}px sans-serif`;
+                    bgCtx.fillText('⭐', -p.size / 2, p.size / 2);
+                }
+
+                bgCtx.restore();
+
+                if (p.y < -30) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            if (Math.random() < 0.1) createParticle();
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+
+        // ====================================================
+        // 3. INTERACTIVE HERO ELEMENTS
+        // ====================================================
+        document.querySelectorAll('.question-block').forEach(block => {
+            block.addEventListener('click', (e) => {
+                playSfx('coin');
+                
+                // Animated Floating Coin Element
+                const coinPop = document.createElement('div');
+                coinPop.textContent = '🪙 +100';
+                coinPop.className = 'fixed font-retro text-sm text-mario-yellow drop-shadow-[0_2px_0_#000] pointer-events-none z-50 animate-bounce';
+                coinPop.style.left = `${e.clientX - 20}px`;
+                coinPop.style.top = `${e.clientY - 40}px`;
+                document.body.appendChild(coinPop);
+
+                setTimeout(() => coinPop.remove(), 800);
+            });
+        });
+
+        const pipe = document.getElementById('interactive-pipe');
+        const pirana = document.getElementById('pirana-plant');
+        pipe.addEventListener('click', () => {
+            playSfx('pipe');
+            pirana.style.opacity = '1';
+            pirana.style.transform = 'translate(-50%, -20px)';
+            setTimeout(() => {
+                pirana.style.opacity = '0';
+                pirana.style.transform = 'translate(-50%, 0px)';
+            }, 1200);
+        });
+
+
+        // ====================================================
+        // 4. PLATFORMER MINI GAME CANVAS
+        // ====================================================
+        const gameCanvas = document.getElementById('gameCanvas');
+        const gCtx = gameCanvas.getContext('2d');
+
+        const scoreDisplay = document.getElementById('score-display');
+        const coinsDisplay = document.getElementById('coins-display');
+        const highScoreDisplay = document.getElementById('high-score-display');
+        const overlay = document.getElementById('game-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const startBtn = document.getElementById('start-btn');
+        const mobileJumpBtn = document.getElementById('mobile-jump-btn');
+
+        let isGameRunning = false;
+        let score = 0;
+        let coins = 0;
+        let highScore = 0;
+        let gameFrame = 0;
+
+        const groundHeight = 40;
+        const mario = {
+            x: 50,
+            y: 200,
+            width: 28,
+            height: 38,
+            velocityY: 0,
+            gravity: 0.75,
+            jumpPower: -12.5,
+            isGrounded: false,
+            isInvincible: false
+        };
+
+        let goombas = [];
+        let coinItems = [];
+        let stars = [];
+
+        function resetGame() {
+            score = 0;
+            coins = 0;
+            gameFrame = 0;
+            goombas = [];
+            coinItems = [];
+            stars = [];
+            mario.y = gameCanvas.height - groundHeight - mario.height;
+            mario.velocityY = 0;
+            mario.isGrounded = true;
+            mario.isInvincible = false;
+            updateGameUI();
+        }
+
+        function padZero(num, size) {
+            let s = num + "";
+            while (s.length < size) s = "0" + s;
+            return s;
+        }
+
+        function updateGameUI() {
+            scoreDisplay.textContent = padZero(score, 6);
+            coinsDisplay.textContent = `🪙 x${padZero(coins, 2)}`;
+            highScoreDisplay.textContent = padZero(highScore, 6);
+        }
+
+        function doJump() {
+            if (mario.isGrounded && isGameRunning) {
+                mario.velocityY = mario.jumpPower;
+                mario.isGrounded = false;
+                playSfx('jump');
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                if (!isGameRunning && overlay.style.display !== 'none') {
+                    startGame();
+                } else {
+                    doJump();
+                }
+            }
+        });
+
+        mobileJumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            doJump();
+        });
+
+        startBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            resetGame();
+            isGameRunning = true;
+            overlay.style.display = 'none';
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            isGameRunning = false;
+            playSfx('gameover');
+            if (score > highScore) highScore = score;
+            updateGameUI();
+
+            overlayTitle.textContent = "GAME OVER!";
+            overlayMsg.innerHTML = `Skor Akhir: <b>${score}</b> | Koin: <b>${coins}</b>`;
+            startBtn.textContent = "MAIN LAGI";
+            overlay.style.display = 'flex';
+        }
+
+        function drawMario() {
+            gCtx.fillStyle = mario.isInvincible ? (gameFrame % 4 < 2 ? '#FBD000' : '#E52521') : '#E52521';
+            gCtx.fillRect(mario.x, mario.y, mario.width, 16);
+            gCtx.fillRect(mario.x + 4, mario.y + 16, mario.width - 8, 10);
+
+            // Blue Overalls
+            gCtx.fillStyle = '#00227B';
+            gCtx.fillRect(mario.x + 4, mario.y + 24, mario.width - 8, 14);
+
+            // Face
+            gCtx.fillStyle = '#FFCC99';
+            gCtx.fillRect(mario.x + 10, mario.y + 6, 14, 8);
+            gCtx.fillStyle = '#000000';
+            gCtx.fillRect(mario.x + 14, mario.y + 10, 8, 3);
+        }
+
+        function handleGoombas() {
+            if (gameFrame % 110 === 0) {
+                goombas.push({
+                    x: gameCanvas.width,
+                    y: gameCanvas.height - groundHeight - 24,
+                    width: 26,
+                    height: 24,
+                    speed: 3 + Math.floor(score / 400) * 0.4
+                });
+            }
+
+            for (let i = 0; i < goombas.length; i++) {
+                let g = goombas[i];
+                g.x -= g.speed;
+
+                // Goomba Body
+                gCtx.fillStyle = '#A04000';
+                gCtx.fillRect(g.x, g.y + 4, g.width, 20);
+                gCtx.fillStyle = '#000000';
+                gCtx.fillRect(g.x + 4, g.y + 8, 4, 6);
+                gCtx.fillRect(g.x + 16, g.y + 8, 4, 6);
+
+                // Collision
+                if (
+                    mario.x < g.x + g.width &&
+                    mario.x + mario.width > g.x &&
+                    mario.y < g.y + g.height &&
+                    mario.y + mario.height > g.y
+                ) {
+                    if (mario.isInvincible) {
+                        goombas.splice(i, 1);
+                        i--;
+                        score += 200;
+                        playSfx('stomp');
+                    } else {
+                        gameOver();
+                    }
+                }
+
+                if (g.x + g.width < 0) {
+                    goombas.splice(i, 1);
+                    i--;
+                    score += 50;
+                }
+            }
+        }
+
+        function handleCoinsAndStars() {
+            if (gameFrame % 80 === 0) {
+                coinItems.push({
+                    x: gameCanvas.width,
+                    y: gameCanvas.height - groundHeight - 50 - Math.random() * 50,
+                    width: 16,
+                    height: 18,
+                    speed: 3
+                });
+            }
+
+            if (gameFrame % 450 === 0) {
+                stars.push({
+                    x: gameCanvas.width,
+                    y: gameCanvas.height - groundHeight - 80,
+                    width: 20,
+                    height: 20,
+                    speed: 3.5
+                });
+            }
+
+            // Draw Coins
+            for (let i = 0; i < coinItems.length; i++) {
+                let c = coinItems[i];
+                c.x -= c.speed;
+
+                gCtx.fillStyle = '#FBD000';
+                gCtx.fillRect(c.x + 3, c.y, c.width - 6, c.height);
+                gCtx.fillRect(c.x, c.y + 3, c.width, c.height - 6);
+
+                if (
+                    mario.x < c.x + c.width &&
+                    mario.x + mario.width > c.x &&
+                    mario.y < c.y + c.height &&
+                    mario.y + mario.height > c.y
+                ) {
+                    coins += 1;
+                    score += 100;
+                    playSfx('coin');
+                    coinItems.splice(i, 1);
+                    i--;
+                    updateGameUI();
+                } else if (c.x + c.width < 0) {
+                    coinItems.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Draw Stars
+            for (let i = 0; i < stars.length; i++) {
+                let s = stars[i];
+                s.x -= s.speed;
+
+                gCtx.fillStyle = '#FBD000';
+                gCtx.font = '16px sans-serif';
+                gCtx.fillText('⭐', s.x, s.y + 16);
+
+                if (
+                    mario.x < s.x + s.width &&
+                    mario.x + mario.width > s.x &&
+                    mario.y < s.y + s.height &&
+                    mario.y + mario.height > s.y
+                ) {
+                    mario.isInvincible = true;
+                    triggerStarPowerUI();
+                    stars.splice(i, 1);
+                    i--;
+                    setTimeout(() => mario.isInvincible = false, 5000);
+                } else if (s.x + s.width < 0) {
+                    stars.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function drawEnvironment() {
+            // Ground Bricks
+            gCtx.fillStyle = '#B84418';
+            gCtx.fillRect(0, gameCanvas.height - groundHeight, gameCanvas.width, groundHeight);
+
+            gCtx.fillStyle = '#000000';
+            gCtx.fillRect(0, gameCanvas.height - groundHeight, gameCanvas.width, 4);
+
+            for (let x = 0; x < gameCanvas.width; x += 30) {
+                gCtx.fillRect(x, gameCanvas.height - groundHeight, 2, groundHeight);
+            }
+        }
+
+        function gameLoop() {
+            if (!isGameRunning) return;
+
+            gCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            // Sky
+            gCtx.fillStyle = isStarPowerActive ? (gameFrame % 6 < 3 ? '#E52521' : '#43B047') : '#5C94FC';
+            gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            // Mario Gravity
+            mario.velocityY += mario.gravity;
+            mario.y += mario.velocityY;
+
+            const maxGroundY = gameCanvas.height - groundHeight - mario.height;
+            if (mario.y >= maxGroundY) {
+                mario.y = maxGroundY;
+                mario.velocityY = 0;
+                mario.isGrounded = true;
+            }
+
+            drawEnvironment();
+            drawMario();
+            handleGoombas();
+            handleCoinsAndStars();
+
+            gameFrame++;
+            if (gameFrame % 8 === 0) {
+                score += 1;
+                updateGameUI();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+
+        // ====================================================
+        // 5. TRIVIA QUIZ LOGIC
+        // ====================================================
+        const quizData = [
+            {
+                q: "Siapakah nama asli Mario saat pertama kali muncul di game arcade Donkey Kong (1981)?",
+                options: ["Jumpman", "Plumber Man", "Super Guy", "Luigi"],
+                correct: 0
+            },
+            {
+                q: "Item manakah yang memberikan kekebalan total dan kecepatan ekstra pada Mario?",
+                options: ["Fire Flower", "Super Star", "1-Up Mushroom", "Super Leaf"],
+                correct: 1
+            },
+            {
+                q: "Siapakah nama pencipta dan desainer utama game Super Mario Bros?",
+                options: ["Hideo Kojima", "Shigeru Miyamoto", "Satoru Iwata", "Eiji Aonuma"],
+                correct: 1
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+
+        const quizQ = document.getElementById('quiz-question');
+        const quizOpt = document.getElementById('quiz-options');
+        const quizProg = document.getElementById('quiz-progress');
+        const quizScoreDisplay = document.getElementById('quiz-score');
+
+        function loadQuiz() {
+            const current = quizData[currentQuizIndex];
+            quizProg.textContent = `PERTANYAAN ${currentQuizIndex + 1}/${quizData.length}`;
+            quizQ.textContent = current.q;
+            quizOpt.innerHTML = '';
+
+            current.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'retro-btn font-sans text-sm font-bold bg-mario-blue text-white hover:bg-blue-800 p-3 rounded-lg border-2 border-black text-left retro-shadow-sm';
+                btn.textContent = `${idx + 1}. ${opt}`;
+                btn.onclick = () => checkAnswer(idx);
+                quizOpt.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(idx) {
+            if (idx === quizData[currentQuizIndex].correct) {
+                playSfx('coin');
+                quizScore += 100;
+                alert(' Jawaban Tepat! +100 Poin!');
+            } else {
+                playSfx('gameover');
+                alert(' Jawaban Kurang Tepat!');
+            }
+
+            quizScoreDisplay.textContent = `SCORE: ${quizScore}`;
+            currentQuizIndex++;
+
+            if (currentQuizIndex < quizData.length) {
+                loadQuiz();
+            } else {
+                quizQ.textContent = `🎉 Selamat! Kamu Menyelesaikan Trivia dengan Skor Akhir: ${quizScore}!`;
+                quizOpt.innerHTML = `<button onclick="resetQuiz()" class="retro-btn font-retro text-xs bg-mario-green text-white p-4 rounded-lg border-2 border-black w-full">ULANGI TRIVIA</button>`;
+            }
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizScoreDisplay.textContent = `SCORE: 0`;
+            loadQuiz();
+        }
+
+        // ====================================================
+        // 6. UI TOGGLES & LISTENERS
+        // ====================================================
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('nav-links').classList.toggle('hidden');
+        });
+
+        document.getElementById('bgm-toggle-btn').addEventListener('click', toggleBgm);
+
+        document.getElementById('mute-btn').addEventListener('click', () => {
+            initAudio();
+            isMuted = !isMuted;
+            masterGain.gain.value = isMuted ? 0 : 0.3;
+            document.getElementById('mute-btn').innerHTML = isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        });
+
+        document.getElementById('volume-slider').addEventListener('input', (e) => {
+            initAudio();
+            if (masterGain) masterGain.gain.value = e.target.value;
+        });
+
+        document.getElementById('star-power-btn').addEventListener('click', triggerStarPowerUI);
+
+        // Start Quiz on Load
+        loadQuiz();
+    </script>
+</body>
+</html>
